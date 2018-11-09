@@ -1,22 +1,28 @@
-FROM node:9-alpine
-#FROM alpine:3.8
+#TODO:making docker non root && studying why it's needed
 
-ONBUILD RUN apk add --update \
-    python \
-    python-dev \
-    py-pip \
-    bash \
-  && rm -rf /var/cache/apk/*
+FROM bitnami/minideb:stretch
+
+#operational directory
+ENV OP_DIR=/app
+
+RUN install_packages python3-minimal \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    #bash \
+#for nodejs
+    curl \
+    gnupg \
+   && curl -sL https://deb.nodesource.com/setup_10.x | bash \
+   && install_packages nodejs \
+   && npm install
+   
+
+#Should volume be used? "Can't find command for docker right now"
+COPY . ${OP_DIR} 
+WORKDIR "${OP_DIR}"
+
+RUN chmod +x run.sh
+CMD ["sh", "run.sh"]
 
 
-WORKDIR /app
-ONBUILD COPY . /app
-
-EXPOSE 8080
-
-#CMD [ "npm", "run", "start" ]
-
-#for python
-ONBUILD RUN pip install -r requirements.txt
-ONBUILD RUN chmod +x run.sh
-ONBUILD CMD ["sh", "run.sh"]
