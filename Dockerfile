@@ -1,24 +1,27 @@
+FROM debian:buster-slim
 
-FROM bitnami/minideb:stretch
-
-#operational directory
-ENV OP_DIR=/app
 ENV NODE_VERSION=10
+ENV CURL_VERSION=7.61.0
+ENV PYTHON_VERSION=3.6.7
+ENV PIP_VERSION=9.0.1
 
-RUN install_packages python3-all \
+RUN apt-get update && apt-get install -y python3-all=${PYTHON_VERSION} \
     build-essential \
     libssl-dev \
     libffi-dev \
+    python3-pip=${PIP_VERSION} \
 #for nodejs
-    curl \
     gnupg \
+    curl=${CURL_VERSION} \
+    vim-tiny \
+    --no-install-recommends \
    && curl -sL https://deb.nodesource.com/setup_${NODE_VERSION}.x | bash  \
-   && install_packages nodejs 
-   
+   && apt-get update && apt-get install -y nodejs \
+   --no-install-recommends \ 
+   && rm -rf /var/lib/apt/lists/*
 
-#Should volume be used? "Can't find command for docker right now"
-COPY . ${OP_DIR} 
-WORKDIR "${OP_DIR}"
+VOLUME . /app
+WORKDIR /app
 
 RUN chmod +x run.sh
 CMD ["sh", "run.sh"]
